@@ -76,7 +76,7 @@
   .seg button.on { background:linear-gradient(135deg,#0F6E56,#1D9E75); color:#fff; font-weight:600; }
   .dot { display:inline-block; width:8px; height:8px; border-radius:2px; margin-right:4px; }
   .tabs { position:fixed; bottom:0; left:0; right:0; display:flex; background:var(--surface); border-top:0.5px solid var(--border); padding-bottom: env(safe-area-inset-bottom); z-index:10; max-width:480px; margin:0 auto; }
-  .tab { flex:1; border:none; background:transparent; padding:10px 2px 12px; cursor:pointer; color:var(--text3); display:flex; flex-direction:column; align-items:center; gap:3px; font-size:11px; transition:color .15s; }
+  .tab { flex:1; border:none; background:transparent; padding:10px 1px 12px; cursor:pointer; color:var(--text3); display:flex; flex-direction:column; align-items:center; gap:3px; font-size:10.5px; transition:color .15s; }
   .tab svg { width:22px; height:22px; stroke:currentColor; fill:none; stroke-width:1.7; }
   .tab.active { color:#1D9E75; font-weight:600; }
   .tab.active svg { stroke-width:2.1; }
@@ -100,6 +100,7 @@
     <div class="panel" id="panel-itinerary"></div>
     <div class="panel" id="panel-finance"></div>
     <div class="panel" id="panel-todo"></div>
+    <div class="panel" id="panel-guide"></div>
   </div>
 </div>
 <div class="tabs">
@@ -107,6 +108,7 @@
   <button class="tab" data-tab="itinerary"><svg viewBox="0 0 24 24"><path d="M12 21s-6-5.5-6-10a6 6 0 1 1 12 0c0 4.5-6 10-6 10z"/><circle cx="12" cy="11" r="2"/></svg>Trip</button>
   <button class="tab" data-tab="finance"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/></svg>Money</button>
   <button class="tab" data-tab="todo"><svg viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2"/></svg>To-do</button>
+  <button class="tab" data-tab="guide"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v.01M11 12h1v4h1"/></svg>Guide</button>
 </div>
 
 <script>
@@ -172,18 +174,50 @@
       { id:'w4', text:'See Komodo dragons', loc:'Flores', done:false },
       { id:'w5', text:'Pink Beach', loc:'Komodo', done:false },
       { id:'w6', text:'Ubud rice terraces', loc:'Bali', done:false }
+    ],
+    habits: [
+      { id:'h1', text:'Read 1 hour', emoji:'📖', streak:0, lastDone:null },
+      { id:'h2', text:'Write 1 hour', emoji:'✍️', streak:0, lastDone:null },
+      { id:'h3', text:'Workout 30 min', emoji:'💪', streak:0, lastDone:null }
     ]
   };
+
+  const QUOTES = [
+    "The world is a book, and those who do not travel read only one page.",
+    "Travel far enough, you meet yourself.",
+    "Discipline is choosing between what you want now and what you want most.",
+    "A little progress each day adds up to big results.",
+    "Wherever you go, go with all your heart.",
+    "Don't count the days, make the days count.",
+    "The journey not the arrival matters.",
+    "Adventure is worthwhile in itself.",
+    "What you do every day matters more than what you do once in a while.",
+    "Collect moments, not things.",
+    "Small steps every day.",
+    "To move, to breathe, to fly, to float — to roam the roads of lands remote.",
+    "Once a year, go somewhere you've never been before.",
+    "Take only memories, leave only footprints.",
+    "We travel not to escape life, but for life not to escape us.",
+    "Stay consistent — your future self is watching.",
+    "Jobs fill your pocket, adventures fill your soul.",
+    "Be present. This is the trip you'll remember.",
+    "Doubt kills more dreams than failure ever will.",
+    "One day or day one. You decide."
+  ];
 
   let state, finView='actual';
   function load(){
     try { const raw = localStorage.getItem(STORE_KEY); state = raw ? JSON.parse(raw) : JSON.parse(JSON.stringify(SEED)); }
     catch(e){ state = JSON.parse(JSON.stringify(SEED)); }
+    if(!state.habits){ state.habits = JSON.parse(JSON.stringify(SEED.habits)); }
     save();
   }
   function save(){ try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch(e){} }
   const uid = () => Math.random().toString(36).slice(2,8);
   const esc = s => (s||'').replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const todayKey = () => { const d=new Date(); return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate(); };
+  const yesterdayKey = () => { const d=new Date(Date.now()-86400000); return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate(); };
+  const dailyQuote = () => { const d=new Date(); const n=Math.floor((d-new Date(d.getFullYear(),0,0))/86400000); return QUOTES[n%QUOTES.length]; };
 
   function totals(){
     const a={}, p={}; Object.keys(CATS).forEach(c=>{a[c]=0;p[c]=0;});
@@ -233,12 +267,46 @@
           <div style="text-align:right"><div class="muted">free now</div><div style="font-size:15px;font-weight:600">${fmt(remainNow)}</div></div>
         </div>
       </div>
+      <p class="section-h">🌅 Daily habits</p>
+      <div class="card" id="habits-card"></div>
+      <div class="card" style="background:linear-gradient(135deg,#EEEDFE,#FBEAF0);border:none;text-align:center">
+        <div style="font-size:13px;font-style:italic;color:#534AB7;line-height:1.5">“${esc(dailyQuote())}”</div>
+      </div>
       <p class="section-h">Still to book</p>
       ${up.length?up.map(i=>`<div class="card"><div class="row"><div><div style="font-size:14px;font-weight:500">${esc(i.title)}</div><div class="muted">${esc(i.date)} · ${esc(i.loc)}</div></div><span class="pill" style="background:var(--warn-bg);color:var(--warn-tx)">open</span></div></div>`).join(''):'<p class="muted" style="padding:0 4px">All set!</p>'}
       <p class="section-h">Next on the list</p>
       ${nt.length?nt.map(t=>`<div class="card" style="padding:10px 14px"><div style="font-size:14px">○ ${esc(t.text)}</div></div>`).join(''):'<p class="muted" style="padding:0 4px">Nothing pending</p>'}
     `;
     document.getElementById('ov-bud').onclick=()=>{ const v=prompt('Set total trip budget (€):', state.budget); if(v!==null&&!isNaN(parseFloat(v))){state.budget=parseFloat(v);save();renderOverview();} };
+    renderHabits();
+  }
+
+  function renderHabits(){
+    const card=document.getElementById('habits-card'); if(!card)return;
+    const tk=todayKey(), yk=yesterdayKey();
+    state.habits.forEach(h=>{ if(h.lastDone && h.lastDone!==tk && h.lastDone!==yk){ h.streak=0; } });
+    const doneCount=state.habits.filter(h=>h.lastDone===tk).length;
+    card.innerHTML = `
+      <div class="row" style="margin-bottom:10px"><span class="muted">Today · ${doneCount}/${state.habits.length} done</span>${doneCount===state.habits.length?'<span class="pill" style="background:var(--ok-bg);color:var(--ok-tx)">all done 🎉</span>':''}</div>
+      ${state.habits.map(h=>{ const done=h.lastDone===tk; return `
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-top:0.5px solid var(--border)">
+          <button class="hbtn" data-h="${h.id}" style="width:30px;height:30px;border-radius:50%;border:1.5px solid ${done?'#1D9E75':'var(--border)'};background:${done?'#1D9E75':'transparent'};color:#fff;cursor:pointer;font-size:15px;flex-shrink:0">${done?'✓':''}</button>
+          <div style="flex:1"><div style="font-size:14px;${done?'color:var(--text2)':''}">${h.emoji} ${esc(h.text)}</div></div>
+          ${h.streak>0?`<span class="pill" style="background:#FAEEDA;color:#854F0B">🔥 ${h.streak}</span>`:''}
+          <button class="del" data-hdel="${h.id}">🗑</button>
+        </div>`; }).join('')}
+      <div style="display:flex;gap:8px;margin-top:10px;padding-top:10px;border-top:0.5px solid var(--border)">
+        <input type="text" id="h-text" placeholder="Add a daily habit" style="flex:1;margin:0"/>
+        <button class="btn btn-primary" id="h-add" style="margin:0">Add</button>
+      </div>`;
+    card.querySelectorAll('[data-h]').forEach(b=>b.onclick=()=>{
+      const h=state.habits.find(x=>x.id===b.dataset.h);
+      if(h.lastDone===tk){ h.lastDone = (h.streak>1?yk:null); h.streak=Math.max(0,h.streak-1); }
+      else { h.streak = (h.lastDone===yk? h.streak+1 : 1); h.lastDone=tk; }
+      save(); renderHabits();
+    });
+    card.querySelectorAll('[data-hdel]').forEach(b=>b.onclick=()=>{ if(confirm('Remove this habit?')){ state.habits=state.habits.filter(x=>x.id!==b.dataset.hdel); save(); renderHabits(); } });
+    card.querySelector('#h-add').onclick=()=>{ const v=card.querySelector('#h-text').value.trim(); if(!v)return; state.habits.push({id:uid(),text:v,emoji:'⭐',streak:0,lastDone:null}); save(); renderHabits(); };
   }
 
   function renderItinerary(){
@@ -386,7 +454,60 @@
     else { el.textContent='💚 trip complete — welkom thuis'; }
   }
 
-  function renderAll(){ renderOverview(); renderItinerary(); renderFinance(); renderTodo(); renderCountdown(); }
+  function renderGuide(){
+    const el=document.getElementById('panel-guide'); if(!el)return;
+    const app=(name,desc,why,ios)=>`<div class="card" style="padding:11px 14px"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px"><div style="flex:1"><div style="font-size:14px;font-weight:600">${name}</div><div class="muted" style="margin-top:1px">${desc}</div><div style="font-size:12px;color:var(--ok-tx);margin-top:4px">${why}</div></div><a class="lk" target="_blank" rel="noopener" href="${ios}" style="flex-shrink:0">Get</a></div>`;
+    const tip=(t)=>`<div style="display:flex;gap:8px;padding:7px 0;font-size:13px;line-height:1.5"><span>•</span><span>${t}</span></div>`;
+    el.innerHTML = `
+      <p class="section-h" style="margin-top:4px">📲 Apps to download before you go</p>
+      ${app('Grab','Rides, food delivery, groceries','Your #1 app — taxis, scooters (GrabBike), food. Cheaper & safer than street taxis.','https://apps.apple.com/app/grab-app/id647268330')}
+      ${app('Gojek','Rides, food (GoFood), payments','Indonesia\\'s home-grown rival to Grab — sometimes cheaper, wider scooter coverage.','https://apps.apple.com/app/gojek/id944875099')}
+      ${app('Google Maps','Maps + offline downloads','Download offline maps of each area before you lose signal on the islands.','https://apps.apple.com/app/google-maps/id585027354')}
+      ${app('Google Translate','Bahasa Indonesia, offline','Download Indonesian offline. Camera mode reads menus & signs.','https://apps.apple.com/app/google-translate/id414706506')}
+      ${app('Traveloka','Domestic flights, trains, hotels','Best local prices for Indonesian domestic flights & ferries — often beats Western sites.','https://apps.apple.com/app/traveloka-book-hotel-flight/id1064212993')}
+      ${app('XE Currency','EUR ⇄ IDR converter, offline','Numbers have a LOT of zeros here. Sanity-check prices fast.','https://apps.apple.com/app/xe-currency-money-transfers/id315241195')}
+      ${app('Wise','Multi-currency card & transfers','Great rates for spending; many travellers use it over bank cards.','https://apps.apple.com/app/wise/id612261027')}
+      ${app('WhatsApp','Messaging','Every hotel, boat operator & tour books via WhatsApp here, not email.','https://apps.apple.com/app/whatsapp-messenger/id310633997')}
+
+      <p class="section-h">💸 Money & SIM</p>
+      <div class="card">
+        ${tip('Get an <b>eSIM</b> (Airalo / Holafly) before you land, or a local <b>Telkomsel</b> SIM at the airport — best coverage on remote islands.')}
+        ${tip('Indonesia is still largely <b>cash</b> for small things (warungs, scooters, markets). Carry rupiah; cards work in malls & nicer spots.')}
+        ${tip('Use ATMs inside banks. Withdraw larger amounts to save on the ~€3–4 fee per withdrawal.')}
+        ${tip('IDR has many zeros — 100,000 IDR ≈ €5.70. Double-check before paying.')}
+        ${tip('QRIS QR-code payment is everywhere now and works with many e-wallets.')}
+      </div>
+
+      <p class="section-h">🛵 Scooter & getting around</p>
+      <div class="card">
+        ${tip('Carry your <b>International Driving Permit</b> + licence — police checks happen, especially in Bali.')}
+        ${tip('Always wear the helmet. Check the bike for scratches & film it before renting.')}
+        ${tip('Confirm your <b>travel insurance covers motorbikes</b> — many exclude it without the right licence.')}
+        ${tip('On Gili Islands there are no cars or scooters — it\\'s bicycles & horse carts only.')}
+      </div>
+
+      <p class="section-h">🧭 Smart things first-timers miss</p>
+      <div class="card">
+        ${tip('Book the <b>Komodo sailing first</b> — departure dates are fixed and fill up; plan the rest around it.')}
+        ${tip('Buffer your <b>Bali→Jakarta</b> flight a full day before the EY473 home flight — domestic delays are common.')}
+        ${tip('Komodo <b>National Park fees</b> are often paid separately from the boat — bring extra cash.')}
+        ${tip('Carry small rupiah notes for temple donations, parking, and toilets.')}
+        ${tip('Respect dress codes at temples (sarong/covered shoulders) — Borobudur & Bali temples especially.')}
+        ${tip('Bali Belly is real — drink bottled water, be cautious with ice in cheap spots early on.')}
+        ${tip('Download your boarding passes & hotel bookings <b>offline</b> — island wifi is unreliable.')}
+      </div>
+
+      <p class="section-h">🆘 Good to have saved</p>
+      <div class="card">
+        ${tip('Emergency number in Indonesia: <b>112</b>.')}
+        ${tip('Netherlands embassy is in <b>Jakarta</b> — note the address before you travel inland.')}
+        ${tip('Keep a photo of your passport & travel insurance policy in your phone.')}
+      </div>
+      <p class="muted" style="text-align:center;padding:8px 4px 0">App links open the App Store. Verify visa/eSIM details close to departure — rules change.</p>
+    `;
+  }
+
+  function renderAll(){ renderOverview(); renderItinerary(); renderFinance(); renderTodo(); renderGuide(); renderCountdown(); }
   document.querySelectorAll('.tab').forEach(tab=>tab.onclick=()=>{
     document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
     document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
