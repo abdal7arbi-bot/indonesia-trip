@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="Indonesia 2026" />
+<meta name="theme-color" content="#0f6e56" />
+<link rel="manifest" href="manifest.json" />
+<title>Indonesia 2026 — Trip Tracker</title>
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%230f6e56'/%3E%3Ctext x='90' y='118' font-size='90' text-anchor='middle' fill='white' font-family='sans-serif'%3E🏝%3C/text%3E%3C/svg%3E" />
+<style>
+  :root {
+    --bg: #f4f2ec;
+    --surface: #ffffff;
+    --surface2: #f1efe8;
+    --text: #2c2c2a;
+    --text2: #5f5e5a;
+    --text3: #888780;
+    --border: rgba(0,0,0,0.12);
+    --info-bg:#E6F1FB; --info-tx:#185FA5;
+    --warn-bg:#FAEEDA; --warn-tx:#854F0B;
+    --ok-bg:#E1F5EE; --ok-tx:#0F6E56;
+    --danger-bg:#FCEBEB; --danger-tx:#A32D2D;
+    --radius: 12px; --radius-sm: 8px;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#1c1c1a; --surface:#26262380; --surface2:#2c2c2a; --text:#f1efe8; --text2:#b4b2a9; --text3:#888780;
+      --border: rgba(255,255,255,0.14);
+      --info-bg:#0C447C; --info-tx:#B5D4F4;
+      --warn-bg:#633806; --warn-tx:#FAC775;
+      --ok-bg:#085041; --ok-tx:#9FE1CB;
+      --danger-bg:#791F1F; --danger-tx:#F7C1C1;
+    }
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin:0; padding:0; background:var(--bg); color:var(--text); font-family:var(--font); -webkit-text-size-adjust:100%; }
+  body { padding-bottom: env(safe-area-inset-bottom); }
+  .app { max-width: 480px; margin:0 auto; min-height:100vh; }
+  .head { padding: calc(env(safe-area-inset-top) + 26px) 18px 26px; background: linear-gradient(135deg, #0F6E56 0%, #1D9E75 45%, #EF9F27 115%); color:#fff; border-radius:0 0 24px 24px; position:relative; overflow:hidden; }
+  .head::after { content:"🏝️"; position:absolute; right:-4px; bottom:-16px; font-size:84px; opacity:0.22; transform:rotate(-8deg); }
+  .head h1 { font-size: 25px; font-weight:600; margin:0; position:relative; z-index:1; }
+  .head p { font-size:13px; color:rgba(255,255,255,0.85); margin:4px 0 0; position:relative; z-index:1; }
+  .head .countdown { display:inline-block; margin-top:12px; background:rgba(255,255,255,0.22); padding:5px 12px; border-radius:20px; font-size:13px; font-weight:500; position:relative; z-index:1; }
+  .body { padding: 16px 14px 110px; }
+  .panel { display:none; }
+  .panel.active { display:block; }
+  .card { background:var(--surface); border:0.5px solid var(--border); border-radius:var(--radius); padding:12px 14px; margin-bottom:10px; }
+  .row { display:flex; justify-content:space-between; align-items:flex-start; gap:10px; }
+  .metric { background:var(--surface2); border-radius:var(--radius-sm); padding:12px; }
+  .metric .lbl { font-size:12px; color:var(--text2); margin:0; }
+  .metric .val { font-size:22px; font-weight:600; margin:2px 0 0; }
+  .grid2 { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:10px; }
+  .pill { font-size:11px; padding:2px 8px; border-radius:var(--radius-sm); font-weight:500; display:inline-block; }
+  .section-h { font-size:13px; font-weight:600; color:var(--text2); margin:18px 4px 8px; }
+  .muted { font-size:12px; color:var(--text2); }
+  .mono { font-size:11px; color:var(--text3); font-family: ui-monospace, Menlo, monospace; }
+  input, select, button { font-family:var(--font); font-size:15px; }
+  input[type=text], input[type=number], select { width:100%; padding:10px 12px; border:0.5px solid var(--border); border-radius:var(--radius-sm); background:var(--surface); color:var(--text); margin-bottom:8px; }
+  input:focus, select:focus { outline:none; border-color:var(--info-tx); box-shadow:0 0 0 2px var(--info-bg); }
+  .btn { padding:10px 14px; border:0.5px solid var(--border); background:transparent; border-radius:var(--radius-sm); cursor:pointer; color:var(--text); font-size:14px; }
+  .btn:active { transform:scale(0.98); }
+  .btn-primary { background:linear-gradient(135deg,#0F6E56,#1D9E75); color:#fff; border:none; font-weight:600; }
+  .del { border:none; background:transparent; color:var(--text3); cursor:pointer; font-size:18px; padding:4px; line-height:1; }
+  .check { width:20px; height:20px; flex-shrink:0; margin-top:1px; accent-color:#1D9E75; }
+  .bar-track { height:9px; background:var(--surface2); border-radius:5px; overflow:hidden; margin-top:8px; position:relative; }
+  .bar-fill { height:100%; border-radius:5px; position:absolute; top:0; left:0; }
+  .addform { display:none; margin-top:10px; padding-top:10px; border-top:0.5px solid var(--border); }
+  .addform.open { display:block; }
+  .seg { display:flex; background:var(--surface2); border-radius:var(--radius-sm); padding:3px; margin-bottom:12px; }
+  .seg button { flex:1; border:none; background:transparent; padding:8px; border-radius:6px; cursor:pointer; color:var(--text2); font-size:13px; }
+  .seg button.on { background:linear-gradient(135deg,#0F6E56,#1D9E75); color:#fff; font-weight:600; }
+  .dot { display:inline-block; width:8px; height:8px; border-radius:2px; margin-right:4px; }
+  .tabs { position:fixed; bottom:0; left:0; right:0; display:flex; background:var(--surface); border-top:0.5px solid var(--border); padding-bottom: env(safe-area-inset-bottom); z-index:10; max-width:480px; margin:0 auto; }
+  .tab { flex:1; border:none; background:transparent; padding:10px 2px 12px; cursor:pointer; color:var(--text3); display:flex; flex-direction:column; align-items:center; gap:3px; font-size:11px; transition:color .15s; }
+  .tab svg { width:22px; height:22px; stroke:currentColor; fill:none; stroke-width:1.7; }
+  .tab.active { color:#1D9E75; font-weight:600; }
+  .tab.active svg { stroke-width:2.1; }
+  .est-card { border-style:dashed !important; }
+  .linkrow { display:flex; gap:6px; margin-top:10px; flex-wrap:wrap; }
+  .lk { font-size:12px; text-decoration:none; padding:5px 10px; border-radius:20px; background:var(--surface2); color:var(--text); border:0.5px solid var(--border); white-space:nowrap; }
+  .lk:active { transform:scale(0.97); }
+  .ring-wrap { display:flex; align-items:center; gap:14px; }
+  .ring-num { font-size:13px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="head">
+    <h1>Indonesia 2026 🌴</h1>
+    <p>11 Jun – 28 Jun · solo · Abdullah</p>
+    <span class="countdown" id="countdown">✈️ counting down…</span>
+  </div>
+  <div class="body">
+    <div class="panel active" id="panel-overview"></div>
+    <div class="panel" id="panel-itinerary"></div>
+    <div class="panel" id="panel-finance"></div>
+    <div class="panel" id="panel-todo"></div>
+  </div>
+</div>
+<div class="tabs">
+  <button class="tab active" data-tab="overview"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></svg>Overview</button>
+  <button class="tab" data-tab="itinerary"><svg viewBox="0 0 24 24"><path d="M12 21s-6-5.5-6-10a6 6 0 1 1 12 0c0 4.5-6 10-6 10z"/><circle cx="12" cy="11" r="2"/></svg>Trip</button>
+  <button class="tab" data-tab="finance"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/></svg>Money</button>
+  <button class="tab" data-tab="todo"><svg viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2"/></svg>To-do</button>
+</div>
+
+<script>
+(function(){
+  const STORE_KEY = 'indo_trip_standalone_v1';
+  const fmt = n => '€' + Math.round(n).toLocaleString('en-US');
+  const CATS = {
+    bookings: { label:'Bookings', icon:'✈️', tx:'#185FA5', bg:'#E6F1FB' },
+    food:     { label:'Food', icon:'🍽️', tx:'#BA7517', bg:'#FAEEDA' },
+    activity: { label:'Activities', icon:'🧭', tx:'#0F6E56', bg:'#E1F5EE' },
+    souvenirs:{ label:'Souvenirs', icon:'🎁', tx:'#993556', bg:'#FBEAF0' },
+    care:     { label:'Care', icon:'❤️', tx:'#534AB7', bg:'#EEEDFE' },
+    transport:{ label:'Transport', icon:'🛵', tx:'#993C1D', bg:'#FAECE7' },
+    random:   { label:'Random', icon:'•', tx:'#5F5E5A', bg:'#F1EFE8' }
+  };
+
+  const SEED = {
+    budget: 2500,
+    itinerary: [
+      { id:'i1', date:'11 Jun', title:'Fly Amsterdam → Jakarta', loc:'AMS · AUH · CGK', note:'Etihad EY44 / EY474 · ref 99MES2 · lands 12 Jun 09:00', booked:true },
+      { id:'i2', date:'12 Jun', title:'Night in Jakarta', loc:'The Orient Jakarta', note:'1 night', booked:true },
+      { id:'i3', date:'13 Jun', title:'Fly Jakarta → Jogja', loc:'CGK → JOG', note:'Citilink QG778 · ref RCSLXI', booked:true },
+      { id:'i4', date:'13 Jun', title:'Jogja — Rajaklana Resort & Spa', loc:'Yogyakarta', note:'2 nights · Borobudur / Prambanan?', booked:true },
+      { id:'i5', date:'15 Jun', title:'Fly Jogja → Lombok', loc:'JOG → LOP', note:'Super Air Jet IU778 · ref IUUPPF', booked:true },
+      { id:'i6', date:'15–17 Jun', title:'Lombok — 2 nights', loc:'Lombok', note:'Gili Islands, waterfalls, beaches', booked:false },
+      { id:'i7', date:'~17 Jun', title:'Komodo sailing trip', loc:'Lombok → Flores', note:'3–4 day liveaboard · Pink Beach, Komodo, Padar · TO BOOK', booked:false },
+      { id:'i8', date:'~21 Jun', title:'Bali', loc:'Bali', note:'Ubud, beaches, temples · need flight here', booked:false },
+      { id:'i9', date:'27 Jun', title:'Fly Bali → Jakarta', loc:'DPS → CGK', note:'TO BOOK · arrive before EY473', booked:false },
+      { id:'i10', date:'28 Jun', title:'Fly Jakarta → Amsterdam', loc:'CGK · AUH · AMS', note:'Etihad EY473 / EY41 · ref ATQUG6', booked:true }
+    ],
+    expenses: [
+      { id:'e1', cat:'bookings', label:'Flight AMS→Jakarta (Etihad)', amt:381.51, planned:false },
+      { id:'e2', cat:'bookings', label:'The Orient Jakarta (1 night)', amt:101, planned:false },
+      { id:'e3', cat:'bookings', label:'Flight Jakarta→Jogja (Citilink)', amt:60, planned:false },
+      { id:'e4', cat:'bookings', label:'Rajaklana Resort Jogja (2 nights)', amt:62, planned:false },
+      { id:'e5', cat:'bookings', label:'Flight Jogja→Lombok (Super Air Jet)', amt:80, planned:false },
+      { id:'e6', cat:'bookings', label:'Return flight Jakarta→AMS (Etihad)', amt:344, planned:false },
+      { id:'p1', cat:'activity', label:'Komodo sailing trip (est.)', amt:300, planned:true },
+      { id:'p2', cat:'bookings', label:'Lombok stay 2 nights (est.)', amt:50, planned:true },
+      { id:'p3', cat:'bookings', label:'Bali stay ~6 nights (est.)', amt:180, planned:true },
+      { id:'p4', cat:'transport', label:'Flight Flores/Lombok→Bali (est.)', amt:60, planned:true },
+      { id:'p5', cat:'transport', label:'Flight Bali→Jakarta (est.)', amt:60, planned:true },
+      { id:'p6', cat:'activity', label:'Komodo park fees (est.)', amt:25, planned:true },
+      { id:'p7', cat:'care', label:'Travel insurance (est.)', amt:40, planned:true },
+      { id:'p8', cat:'transport', label:'Scooter rental + fuel ~10 days (est.)', amt:60, planned:true },
+      { id:'p9', cat:'transport', label:'Airport transfers / Grab (est.)', amt:50, planned:true },
+      { id:'p10', cat:'food', label:'Food & drink ~16 days (est.)', amt:320, planned:true }
+    ],
+    todos: [
+      { id:'t1', text:'Book Komodo sailing trip from Lombok', done:false },
+      { id:'t2', text:'Book flight Flores/Lombok → Bali', done:false },
+      { id:'t3', text:'Book flight Bali → Jakarta (27 Jun)', done:false },
+      { id:'t4', text:'Book Lombok accommodation (2 nights)', done:false },
+      { id:'t5', text:'Book Bali accommodation', done:false },
+      { id:'t6', text:'Travel insurance (check scooter cover!)', done:false },
+      { id:'t7', text:'International Driving Permit for scooter', done:false },
+      { id:'t8', text:'Check EY473 departure time on 28 Jun', done:false }
+    ],
+    wishlist: [
+      { id:'w1', text:'Borobudur sunrise', loc:'Jogja', done:false },
+      { id:'w2', text:'Prambanan temple', loc:'Jogja', done:false },
+      { id:'w3', text:'Gili Islands snorkelling', loc:'Lombok', done:false },
+      { id:'w4', text:'See Komodo dragons', loc:'Flores', done:false },
+      { id:'w5', text:'Pink Beach', loc:'Komodo', done:false },
+      { id:'w6', text:'Ubud rice terraces', loc:'Bali', done:false }
+    ]
+  };
+
+  let state, finView='actual';
+  function load(){
+    try { const raw = localStorage.getItem(STORE_KEY); state = raw ? JSON.parse(raw) : JSON.parse(JSON.stringify(SEED)); }
+    catch(e){ state = JSON.parse(JSON.stringify(SEED)); }
+    save();
+  }
+  function save(){ try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch(e){} }
+  const uid = () => Math.random().toString(36).slice(2,8);
+  const esc = s => (s||'').replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+  function totals(){
+    const a={}, p={}; Object.keys(CATS).forEach(c=>{a[c]=0;p[c]=0;});
+    let actual=0, planned=0;
+    state.expenses.forEach(e=>{ if(e.planned){p[e.cat]+=e.amt;planned+=e.amt;} else {a[e.cat]+=e.amt;actual+=e.amt;} });
+    return { a, p, actual, planned, projected:actual+planned };
+  }
+
+  function renderOverview(){
+    const {actual, projected} = totals();
+    const remainNow = state.budget-actual, remainProj = state.budget-projected;
+    const pct = Math.min(100, Math.round(actual/state.budget*100));
+    const pctP = Math.min(100, Math.round(projected/state.budget*100));
+    const up = state.itinerary.filter(i=>!i.booked).slice(0,3);
+    const nt = state.todos.filter(t=>!t.done).slice(0,3);
+    document.getElementById('panel-overview').innerHTML = `
+      <div class="grid2" style="margin-bottom:10px">
+        <div class="metric"><p class="lbl">Spent (actual)</p><p class="val">${fmt(actual)}</p></div>
+        <div class="metric"><p class="lbl">Projected total</p><p class="val">${fmt(projected)}</p></div>
+      </div>
+      <div class="card">
+        <div class="ring-wrap" style="margin-bottom:6px">
+          <svg width="74" height="74" viewBox="0 0 74 74" style="flex-shrink:0">
+            <circle cx="37" cy="37" r="31" fill="none" stroke="var(--surface2)" stroke-width="8"/>
+            <circle cx="37" cy="37" r="31" fill="none" stroke="#F0997B" stroke-width="8" stroke-linecap="round" stroke-dasharray="${(pctP/100*195).toFixed(1)} 195" transform="rotate(-90 37 37)"/>
+            <circle cx="37" cy="37" r="31" fill="none" stroke="#1D9E75" stroke-width="8" stroke-linecap="round" stroke-dasharray="${(pct/100*195).toFixed(1)} 195" transform="rotate(-90 37 37)"/>
+            <text x="37" y="42" text-anchor="middle" font-size="17" font-weight="700" fill="var(--text)">${pct}%</text>
+          </svg>
+          <div style="flex:1">
+            <div class="row"><span class="muted">Budget</span><span style="font-size:13px;font-weight:600">${fmt(state.budget)}</span></div>
+            <div class="bar-track">
+              <div class="bar-fill" style="width:${pctP}%;background:#F0997B"></div>
+              <div class="bar-fill" style="width:${pct}%;background:#1D9E75"></div>
+            </div>
+            <div style="display:flex;gap:14px;margin-top:8px">
+              <span class="muted"><span class="dot" style="background:#1D9E75"></span>spent ${pct}%</span>
+              <span class="muted"><span class="dot" style="background:#F0997B"></span>proj ${pctP}%</span>
+            </div>
+          </div>
+        </div>
+        <button class="btn" style="margin-top:6px;width:100%" id="ov-bud">Adjust budget</button>
+      </div>
+      <div class="card" style="background:${remainProj<0?'var(--danger-bg)':'var(--ok-bg)'};border:none">
+        <div class="row">
+          <div><div style="font-size:13px;color:${remainProj<0?'var(--danger-tx)':'var(--ok-tx)'}">Left after all plans</div>
+          <div style="font-size:20px;font-weight:600;color:${remainProj<0?'var(--danger-tx)':'var(--ok-tx)'}">${fmt(remainProj)}</div></div>
+          <div style="text-align:right"><div class="muted">free now</div><div style="font-size:15px;font-weight:600">${fmt(remainNow)}</div></div>
+        </div>
+      </div>
+      <p class="section-h">Still to book</p>
+      ${up.length?up.map(i=>`<div class="card"><div class="row"><div><div style="font-size:14px;font-weight:500">${esc(i.title)}</div><div class="muted">${esc(i.date)} · ${esc(i.loc)}</div></div><span class="pill" style="background:var(--warn-bg);color:var(--warn-tx)">open</span></div></div>`).join(''):'<p class="muted" style="padding:0 4px">All set!</p>'}
+      <p class="section-h">Next on the list</p>
+      ${nt.length?nt.map(t=>`<div class="card" style="padding:10px 14px"><div style="font-size:14px">○ ${esc(t.text)}</div></div>`).join(''):'<p class="muted" style="padding:0 4px">Nothing pending</p>'}
+    `;
+    document.getElementById('ov-bud').onclick=()=>{ const v=prompt('Set total trip budget (€):', state.budget); if(v!==null&&!isNaN(parseFloat(v))){state.budget=parseFloat(v);save();renderOverview();} };
+  }
+
+  function renderItinerary(){
+    const el=document.getElementById('panel-itinerary');
+    el.innerHTML = `
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <button class="btn btn-primary" style="flex:1" id="bk-add">📌 Book something</button>
+        <button class="btn" style="flex:1" id="it-add">+ Add stop</button>
+      </div>
+      <div id="bk-form" class="card addform">
+        <div style="font-size:12px;color:var(--text2);margin-bottom:8px">Creates a booked stop in your trip and logs the cost in Money — one entry.</div>
+        <input type="text" id="bk-title" placeholder="What (e.g. Lombok guesthouse)" />
+        <input type="text" id="bk-loc" placeholder="Where (e.g. Kuta, Lombok)" />
+        <input type="text" id="bk-date" placeholder="Date (e.g. 15 Jun)" />
+        <input type="number" id="bk-amt" placeholder="Cost (€)" inputmode="decimal" />
+        <select id="bk-cat">${Object.keys(CATS).map(c=>`<option value="${c}"${c==='bookings'?' selected':''}>${CATS[c].label}</option>`).join('')}</select>
+        <input type="text" id="bk-note" placeholder="Notes / ref (optional)" />
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text2);margin-bottom:8px"><input type="checkbox" id="bk-paid" checked style="width:18px;height:18px"/> Already paid (counts against spent now)</label>
+        <div style="display:flex;gap:8px"><button class="btn btn-primary" id="bk-save" style="flex:1">Book it</button><button class="btn" id="bk-cancel" style="flex:1">Cancel</button></div>
+      </div>
+      <div id="it-form" class="card addform">
+        <input type="text" id="it-date" placeholder="Date (e.g. 18 Jun)" />
+        <input type="text" id="it-title" placeholder="What (e.g. Snorkel trip)" />
+        <input type="text" id="it-loc" placeholder="Where (e.g. Gili Air)" />
+        <input type="text" id="it-note" placeholder="Notes (optional)" />
+        <div style="display:flex;gap:8px"><button class="btn btn-primary" id="it-save" style="flex:1">Save</button><button class="btn" id="it-cancel" style="flex:1">Cancel</button></div>
+      </div>
+      <div id="it-list"></div>`;
+    document.getElementById('it-list').innerHTML = state.itinerary.map(i=>`
+      <div class="card"><div class="row">
+        <div style="flex:1">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px">
+            <span class="pill" style="background:var(--surface2);color:var(--text2)">${esc(i.date)}</span>
+            ${i.booked?'<span class="pill" style="background:var(--ok-bg);color:var(--ok-tx)">booked</span>':'<span class="pill" style="background:var(--warn-bg);color:var(--warn-tx)">to book</span>'}
+          </div>
+          <div style="font-size:14px;font-weight:500">${esc(i.title)}</div>
+          <div class="muted">${esc(i.loc)}</div>
+          ${i.cost?`<div class="muted" style="margin-top:2px">💶 ${fmt(i.cost)}${i.expId?'':' (cost not linked)'}</div>`:''}
+          ${i.note?`<div class="mono" style="margin-top:4px">${esc(i.note)}</div>`:''}
+          ${i.loc?`<div class="linkrow">
+            <a class="lk" target="_blank" rel="noopener" href="https://www.booking.com/searchresults.html?ss=${encodeURIComponent(i.loc)}">🏨 Stays</a>
+            <a class="lk" target="_blank" rel="noopener" href="https://www.google.com/travel/flights?q=flights%20to%20${encodeURIComponent(i.loc)}">✈️ Flights</a>
+            <a class="lk" target="_blank" rel="noopener" href="https://www.google.com/maps/search/${encodeURIComponent('things to do in '+i.loc)}">🧭 Explore</a>
+          </div>`:''}
+        </div>
+        <div style="display:flex;flex-direction:column;gap:2px;align-items:flex-end">
+          <button class="del" data-book="${i.id}">${i.booked?'☑':'☐'}</button>
+          <button class="del" data-del="${i.id}">🗑</button>
+        </div>
+      </div></div>`).join('');
+    const f=document.getElementById('it-form');
+    const bf=document.getElementById('bk-form');
+    document.getElementById('it-add').onclick=()=>{bf.classList.remove('open');f.classList.toggle('open');};
+    document.getElementById('bk-add').onclick=()=>{f.classList.remove('open');bf.classList.toggle('open');};
+    document.getElementById('it-cancel').onclick=()=>f.classList.remove('open');
+    document.getElementById('bk-cancel').onclick=()=>bf.classList.remove('open');
+    document.getElementById('it-save').onclick=()=>{ const t=document.getElementById('it-title').value.trim(); if(!t)return; state.itinerary.push({id:uid(),date:document.getElementById('it-date').value.trim()||'TBD',title:t,loc:document.getElementById('it-loc').value.trim(),note:document.getElementById('it-note').value.trim(),booked:false}); save(); renderItinerary(); renderOverview(); };
+    document.getElementById('bk-save').onclick=()=>{
+      const t=document.getElementById('bk-title').value.trim(); if(!t)return;
+      const amt=parseFloat(document.getElementById('bk-amt').value);
+      const cat=document.getElementById('bk-cat').value;
+      const paid=document.getElementById('bk-paid').checked;
+      const date=document.getElementById('bk-date').value.trim()||'TBD';
+      const loc=document.getElementById('bk-loc').value.trim();
+      const note=document.getElementById('bk-note').value.trim();
+      const itId=uid(); let expId=null;
+      if(!isNaN(amt)&&amt>0){
+        expId=uid();
+        state.expenses.push({id:expId, cat:cat, label:t+(loc?' — '+loc:''), amt:amt, planned:!paid, linkedItin:itId});
+      }
+      state.itinerary.push({id:itId, date:date, title:t, loc:loc, note:note, booked:true, cost:(!isNaN(amt)&&amt>0)?amt:null, expId:expId});
+      save(); renderItinerary(); renderFinance(); renderOverview();
+    };
+    el.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{
+      const it=state.itinerary.find(x=>x.id===b.dataset.del);
+      if(it&&it.expId){ const e=state.expenses.find(x=>x.id===it.expId); if(e&&confirm('Also remove the linked '+fmt(e.amt)+' expense from Money?')){ state.expenses=state.expenses.filter(x=>x.id!==it.expId); } }
+      state.itinerary=state.itinerary.filter(x=>x.id!==b.dataset.del);save();renderItinerary();renderFinance();renderOverview();
+    });
+    el.querySelectorAll('[data-book]').forEach(b=>b.onclick=()=>{const i=state.itinerary.find(x=>x.id===b.dataset.book);i.booked=!i.booked;save();renderItinerary();renderOverview();});
+  }
+
+  function renderFinance(){
+    const {a, p, actual, planned, projected} = totals();
+    const showP = finView==='planned';
+    const byCat={}; Object.keys(CATS).forEach(c=>byCat[c]= showP ? a[c]+p[c] : a[c]);
+    const head = showP?projected:actual;
+    const el=document.getElementById('panel-finance');
+    const cards = Object.keys(CATS).map(c=>{const amt=byCat[c]||0;const pc=head>0?Math.round(amt/head*100):0;return `<div class="metric" style="background:${CATS[c].bg}"><p class="lbl" style="color:${CATS[c].tx}">${CATS[c].icon} ${CATS[c].label}</p><p class="val" style="font-size:17px;color:${CATS[c].tx}">${fmt(amt)}</p><p style="font-size:11px;margin:2px 0 0;color:${CATS[c].tx}">${pc}%</p></div>`;}).join('');
+    const vis = state.expenses.filter(e=> showP ? true : !e.planned);
+    el.innerHTML = `
+      <div class="seg"><button class="${finView==='actual'?'on':''}" data-fv="actual">Actual ${fmt(actual)}</button><button class="${finView==='planned'?'on':''}" data-fv="planned">Projected ${fmt(projected)}</button></div>
+      <button class="btn btn-primary" style="width:100%;margin-bottom:12px" id="fin-add">+ Add expense</button>
+      <div id="fin-form" class="card addform">
+        <input type="text" id="fin-label" placeholder="What was it? (e.g. Lunch in Ubud)" />
+        <input type="number" id="fin-amt" placeholder="Amount (€)" inputmode="decimal" />
+        <select id="fin-cat">${Object.keys(CATS).map(c=>`<option value="${c}">${CATS[c].label}</option>`).join('')}</select>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text2);margin-bottom:8px"><input type="checkbox" id="fin-planned" style="width:18px;height:18px"/> Planned estimate (not spent yet)</label>
+        <div style="display:flex;gap:8px"><button class="btn btn-primary" id="fin-save" style="flex:1">Save</button><button class="btn" id="fin-cancel" style="flex:1">Cancel</button></div>
+      </div>
+      <div class="grid2" style="margin-bottom:14px">${cards}</div>
+      <p class="section-h">${showP?'All items (actual + planned)':'Logged expenses'}</p>
+      <div id="fin-list"></div>`;
+    document.getElementById('fin-list').innerHTML = vis.slice().reverse().map(e=>`
+      <div class="card ${e.planned?'est-card':''}" style="padding:10px 14px"><div class="row">
+        <div style="flex:1"><div style="font-size:14px">${esc(e.label)} ${e.planned?'<span class="pill" style="background:#FAECE7;color:#993C1D">est.</span>':''}</div>
+        <span class="pill" style="background:${CATS[e.cat].bg};color:${CATS[e.cat].tx};margin-top:4px">${CATS[e.cat].icon} ${CATS[e.cat].label}</span></div>
+        <div style="text-align:right;display:flex;align-items:center;gap:6px">${e.planned?`<button class="del" data-commit="${e.id}" title="mark spent">✓</button>`:''}<span style="font-size:15px;font-weight:600">${fmt(e.amt)}</span><button class="del" data-fdel="${e.id}">🗑</button></div>
+      </div></div>`).join('');
+    el.querySelectorAll('[data-fv]').forEach(b=>b.onclick=()=>{finView=b.dataset.fv;renderFinance();});
+    const f=document.getElementById('fin-form');
+    document.getElementById('fin-add').onclick=()=>f.classList.toggle('open');
+    document.getElementById('fin-cancel').onclick=()=>f.classList.remove('open');
+    document.getElementById('fin-save').onclick=()=>{const l=document.getElementById('fin-label').value.trim();const am=parseFloat(document.getElementById('fin-amt').value);if(!l||isNaN(am))return;state.expenses.push({id:uid(),cat:document.getElementById('fin-cat').value,label:l,amt:am,planned:document.getElementById('fin-planned').checked});save();renderFinance();renderOverview();};
+    el.querySelectorAll('[data-fdel]').forEach(b=>b.onclick=()=>{state.expenses=state.expenses.filter(x=>x.id!==b.dataset.fdel);save();renderFinance();renderOverview();});
+    el.querySelectorAll('[data-commit]').forEach(b=>b.onclick=()=>{const e=state.expenses.find(x=>x.id===b.dataset.commit);e.planned=false;e.label=e.label.replace(/ \(est\.\)$/,'');save();renderFinance();renderOverview();});
+  }
+
+  function renderTodo(){
+    const el=document.getElementById('panel-todo');
+    el.innerHTML = `
+      <p class="section-h" style="margin-top:4px">To book / sort out</p>
+      <div class="card" style="margin-bottom:12px"><div style="display:flex;gap:8px"><input type="text" id="td-text" placeholder="Add a task" style="flex:1;margin:0"/><button class="btn btn-primary" id="td-add" style="margin:0">Add</button></div></div>
+      <div id="td-list"></div>
+      <p class="section-h">Activity wishlist</p>
+      <div class="card" style="margin-bottom:12px"><input type="text" id="wl-text" placeholder="Thing to do" style="margin-bottom:8px"/><div style="display:flex;gap:8px"><input type="text" id="wl-loc" placeholder="Where" style="flex:1;margin:0"/><button class="btn btn-primary" id="wl-add" style="margin:0">Add</button></div></div>
+      <div id="wl-list"></div>`;
+    document.getElementById('td-list').innerHTML = state.todos.map(t=>`<div class="card" style="padding:10px 14px"><div style="display:flex;gap:10px;align-items:flex-start"><input type="checkbox" class="check" data-tk="${t.id}" ${t.done?'checked':''}/><div style="flex:1;font-size:14px;${t.done?'text-decoration:line-through;color:var(--text3)':''}">${esc(t.text)}</div><button class="del" data-tdel="${t.id}">🗑</button></div></div>`).join('');
+    document.getElementById('wl-list').innerHTML = state.wishlist.map(w=>`<div class="card" style="padding:10px 14px"><div style="display:flex;gap:10px;align-items:flex-start"><input type="checkbox" class="check" data-wk="${w.id}" ${w.done?'checked':''}/><div style="flex:1;${w.done?'text-decoration:line-through;color:var(--text3)':''}"><div style="font-size:14px">${esc(w.text)}</div>${w.loc?`<div class="muted">📍 ${esc(w.loc)}</div>`:''}</div><button class="del" data-wdel="${w.id}">🗑</button></div></div>`).join('');
+    document.getElementById('td-add').onclick=()=>{const v=document.getElementById('td-text').value.trim();if(!v)return;state.todos.push({id:uid(),text:v,done:false});save();renderTodo();renderOverview();};
+    document.getElementById('wl-add').onclick=()=>{const v=document.getElementById('wl-text').value.trim();if(!v)return;state.wishlist.push({id:uid(),text:v,loc:document.getElementById('wl-loc').value.trim(),done:false});save();renderTodo();};
+    el.querySelectorAll('[data-tk]').forEach(c=>c.onchange=()=>{state.todos.find(x=>x.id===c.dataset.tk).done=c.checked;save();renderTodo();renderOverview();});
+    el.querySelectorAll('[data-tdel]').forEach(b=>b.onclick=()=>{state.todos=state.todos.filter(x=>x.id!==b.dataset.tdel);save();renderTodo();renderOverview();});
+    el.querySelectorAll('[data-wk]').forEach(c=>c.onchange=()=>{state.wishlist.find(x=>x.id===c.dataset.wk).done=c.checked;save();renderTodo();});
+    el.querySelectorAll('[data-wdel]').forEach(b=>b.onclick=()=>{state.wishlist=state.wishlist.filter(x=>x.id!==b.dataset.wdel);save();renderTodo();});
+  }
+
+  function renderCountdown(){
+    const el=document.getElementById('countdown'); if(!el)return;
+    const dep=new Date('2026-06-11T10:25:00');
+    const ret=new Date('2026-06-28T23:59:00');
+    const now=new Date();
+    const day=86400000;
+    if(now<dep){ const d=Math.ceil((dep-now)/day); el.textContent='✈️ '+d+(d===1?' day':' days')+' until take-off'; }
+    else if(now<=ret){ const d=Math.floor((now-dep)/day)+1; el.textContent='🌴 day '+d+' of your trip'; }
+    else { el.textContent='💚 trip complete — welkom thuis'; }
+  }
+
+  function renderAll(){ renderOverview(); renderItinerary(); renderFinance(); renderTodo(); renderCountdown(); }
+  document.querySelectorAll('.tab').forEach(tab=>tab.onclick=()=>{
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('panel-'+tab.dataset.tab).classList.add('active');
+    window.scrollTo(0,0);
+  });
+  load(); renderAll();
+})();
+if('serviceWorker' in navigator){ window.addEventListener('load',()=>navigator.serviceWorker.register('service-worker.js').catch(()=>{})); }
+</script>
+</body>
+</html>
