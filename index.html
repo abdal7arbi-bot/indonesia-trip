@@ -86,9 +86,26 @@
   .lk:active { transform:scale(0.97); }
   .ring-wrap { display:flex; align-items:center; gap:14px; }
   .ring-num { font-size:13px; }
+  #splash { position:fixed; inset:0; z-index:1000; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:24px; background:linear-gradient(160deg,#0F6E56 0%,#1D9E75 50%,#EF9F27 130%); color:#fff; transition:opacity .6s ease; }
+  #splash.hide { opacity:0; pointer-events:none; }
+  #splash .palm { font-size:64px; animation:bob 2.4s ease-in-out infinite; }
+  #splash h2 { font-size:30px; font-weight:600; margin:14px 0 6px; }
+  #splash p { font-size:15px; color:rgba(255,255,255,0.9); margin:0; max-width:300px; line-height:1.5; }
+  #splash .tap { margin-top:26px; font-size:12px; color:rgba(255,255,255,0.7); }
+  #splash .dots span { display:inline-block; width:7px; height:7px; border-radius:50%; background:rgba(255,255,255,0.6); margin:0 3px; animation:pulse 1.4s infinite; }
+  #splash .dots span:nth-child(2){animation-delay:.2s} #splash .dots span:nth-child(3){animation-delay:.4s}
+  @keyframes bob { 0%,100%{transform:translateY(0) rotate(-6deg)} 50%{transform:translateY(-10px) rotate(6deg)} }
+  @keyframes pulse { 0%,100%{opacity:.4;transform:scale(.8)} 50%{opacity:1;transform:scale(1.1)} }
 </style>
 </head>
 <body>
+<div id="splash">
+  <div class="palm">🏝️</div>
+  <h2>Welcome to Indonesia</h2>
+  <p id="splash-quote">Your adventure starts here.</p>
+  <div class="dots" style="margin-top:24px"><span></span><span></span><span></span></div>
+  <div class="tap">tap to continue</div>
+</div>
 <div class="app">
   <div class="head">
     <h1>Indonesia 2026 🌴</h1>
@@ -183,26 +200,44 @@
   };
 
   const QUOTES = [
-    "The world is a book, and those who do not travel read only one page.",
-    "Travel far enough, you meet yourself.",
-    "Discipline is choosing between what you want now and what you want most.",
-    "A little progress each day adds up to big results.",
-    "Wherever you go, go with all your heart.",
-    "Don't count the days, make the days count.",
-    "The journey not the arrival matters.",
-    "Adventure is worthwhile in itself.",
-    "What you do every day matters more than what you do once in a while.",
-    "Collect moments, not things.",
-    "Small steps every day.",
-    "To move, to breathe, to fly, to float — to roam the roads of lands remote.",
-    "Once a year, go somewhere you've never been before.",
-    "Take only memories, leave only footprints.",
-    "We travel not to escape life, but for life not to escape us.",
-    "Stay consistent — your future self is watching.",
-    "Jobs fill your pocket, adventures fill your soul.",
-    "Be present. This is the trip you'll remember.",
-    "Doubt kills more dreams than failure ever will.",
-    "One day or day one. You decide."
+    {t:"The world is a book, and those who do not travel read only one page.",ar:false},
+    {t:"Travel far enough, you meet yourself.",ar:false},
+    {t:"Collect moments, not things.",ar:false},
+    {t:"Once a year, go somewhere you've never been before.",ar:false},
+    {t:"We travel not to escape life, but for life not to escape us.",ar:false},
+    {t:"Jobs fill your pocket, adventures fill your soul.",ar:false},
+    {t:"Be present. This is the trip you'll remember.",ar:false},
+    {t:"Take only memories, leave only footprints.",ar:false},
+    {t:"To travel is to live.",ar:false},
+    {t:"Wherever you go, go with all your heart.",ar:false},
+    {t:"Life is short and the world is wide.",ar:false},
+    {t:"Adventure is worthwhile in itself.",ar:false},
+    {t:"Not all those who wander are lost.",ar:false},
+    {t:"The journey, not the arrival, matters.",ar:false},
+    {t:"A little progress each day adds up to big results.",ar:false},
+    {t:"Enjoy the little things, for one day you may look back and realize they were the big things.",ar:false},
+    {t:"Happiness is a journey, not a destination.",ar:false},
+    {t:"Don't count the days, make the days count.",ar:false},
+    {t:"Stay consistent — your future self is watching.",ar:false},
+    {t:"Travel makes one modest. You see what a tiny place you occupy in the world.",ar:false},
+    {t:"السفر يعلّمك أكثر مما تعلّمك المدارس.",ar:true},
+    {t:"اغتنم سفرك، فالحياة رحلة قصيرة.",ar:true},
+    {t:"في السفر سبع فوائد.",ar:true},
+    {t:"خير جليس في الزمان كتاب، وخير الطرق طريق لم تسلكه بعد.",ar:true},
+    {t:"عش اللحظة، فالأيام لا تعود.",ar:true},
+    {t:"من سار على الدرب وصل.",ar:true},
+    {t:"الدنيا يوم لك ويوم عليك، فاجعل يومك سعيداً.",ar:true},
+    {t:"السعادة في الأشياء الصغيرة.",ar:true},
+    {t:"سافر تجد عوضاً عمّن تفارقه.",ar:true},
+    {t:"الحياة جميلة لمن يعرف كيف يعيشها.",ar:true},
+    {t:"اجعل من كل يوم ذكرى تستحق أن تُروى.",ar:true},
+    {t:"الرحلة الحقيقية ليست في رؤية أماكن جديدة، بل في امتلاك عيون جديدة.",ar:true},
+    {t:"استمتع بالطريق بقدر استمتاعك بالوصول.",ar:true},
+    {t:"كن حاضراً، فهذه اللحظة لن تتكرر.",ar:true},
+    {t:"الذكريات أثمن ما نجمعه في السفر.",ar:true},
+    {t:"ابتسم، فالعالم أجمل مما تظن.",ar:true},
+    {t:"خطوة صغيرة كل يوم تصنع فرقاً كبيراً.",ar:true},
+    {t:"لا تؤجل سعادة اليوم إلى الغد.",ar:true}
   ];
 
   let state, finView='actual';
@@ -218,6 +253,7 @@
   const todayKey = () => { const d=new Date(); return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate(); };
   const yesterdayKey = () => { const d=new Date(Date.now()-86400000); return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate(); };
   const dailyQuote = () => { const d=new Date(); const n=Math.floor((d-new Date(d.getFullYear(),0,0))/86400000); return QUOTES[n%QUOTES.length]; };
+  const quoteHTML = (q) => `<div style="font-size:14px;font-style:${q.ar?'normal':'italic'};color:#534AB7;line-height:1.6;${q.ar?'direction:rtl;font-size:16px':''}">${q.ar?'':'“'}${esc(q.t)}${q.ar?'':'”'}</div>`;
 
   function totals(){
     const a={}, p={}; Object.keys(CATS).forEach(c=>{a[c]=0;p[c]=0;});
@@ -270,7 +306,7 @@
       <p class="section-h">🌅 Daily habits</p>
       <div class="card" id="habits-card"></div>
       <div class="card" style="background:linear-gradient(135deg,#EEEDFE,#FBEAF0);border:none;text-align:center">
-        <div style="font-size:13px;font-style:italic;color:#534AB7;line-height:1.5">“${esc(dailyQuote())}”</div>
+        ${quoteHTML(dailyQuote())}
       </div>
       <p class="section-h">Still to book</p>
       ${up.length?up.map(i=>`<div class="card"><div class="row"><div><div style="font-size:14px;font-weight:500">${esc(i.title)}</div><div class="muted">${esc(i.date)} · ${esc(i.loc)}</div></div><span class="pill" style="background:var(--warn-bg);color:var(--warn-tx)">open</span></div></div>`).join(''):'<p class="muted" style="padding:0 4px">All set!</p>'}
@@ -456,55 +492,62 @@
 
   function renderGuide(){
     const el=document.getElementById('panel-guide'); if(!el)return;
-    const app=(name,desc,why,ios)=>`<div class="card" style="padding:11px 14px"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px"><div style="flex:1"><div style="font-size:14px;font-weight:600">${name}</div><div class="muted" style="margin-top:1px">${desc}</div><div style="font-size:12px;color:var(--ok-tx);margin-top:4px">${why}</div></div><a class="lk" target="_blank" rel="noopener" href="${ios}" style="flex-shrink:0">Get</a></div>`;
-    const tip=(t)=>`<div style="display:flex;gap:8px;padding:7px 0;font-size:13px;line-height:1.5"><span>•</span><span>${t}</span></div>`;
-    el.innerHTML = `
-      <p class="section-h" style="margin-top:4px">📲 Apps to download before you go</p>
-      ${app('Grab','Rides, food delivery, groceries','Your #1 app — taxis, scooters (GrabBike), food. Cheaper & safer than street taxis.','https://apps.apple.com/app/grab-app/id647268330')}
-      ${app('Gojek','Rides, food (GoFood), payments','Indonesia’s home-grown rival to Grab — sometimes cheaper, wider scooter coverage.','https://apps.apple.com/app/gojek/id944875099')}
-      ${app('Google Maps','Maps + offline downloads','Download offline maps of each area before you lose signal on the islands.','https://apps.apple.com/app/google-maps/id585027354')}
-      ${app('Google Translate','Bahasa Indonesia, offline','Download Indonesian offline. Camera mode reads menus & signs.','https://apps.apple.com/app/google-translate/id414706506')}
-      ${app('Traveloka','Domestic flights, trains, hotels','Best local prices for Indonesian domestic flights & ferries — often beats Western sites.','https://apps.apple.com/app/traveloka-book-hotel-flight/id1064212993')}
-      ${app('XE Currency','EUR ⇄ IDR converter, offline','Numbers have a LOT of zeros here. Sanity-check prices fast.','https://apps.apple.com/app/xe-currency-money-transfers/id315241195')}
-      ${app('Wise','Multi-currency card & transfers','Great rates for spending; many travellers use it over bank cards.','https://apps.apple.com/app/wise/id612261027')}
-      ${app('WhatsApp','Messaging','Every hotel, boat operator & tour books via WhatsApp here, not email.','https://apps.apple.com/app/whatsapp-messenger/id310633997')}
-
-      <p class="section-h">💸 Money & SIM</p>
-      <div class="card">
-        ${tip('Get an <b>eSIM</b> (Airalo / Holafly) before you land, or a local <b>Telkomsel</b> SIM at the airport — best coverage on remote islands.')}
-        ${tip('Indonesia is still largely <b>cash</b> for small things (warungs, scooters, markets). Carry rupiah; cards work in malls & nicer spots.')}
-        ${tip('Use ATMs inside banks. Withdraw larger amounts to save on the ~€3–4 fee per withdrawal.')}
-        ${tip('IDR has many zeros — 100,000 IDR ≈ €5.70. Double-check before paying.')}
-        ${tip('QRIS QR-code payment is everywhere now and works with many e-wallets.')}
+    const APPS=[
+      ['🚗','Grab','Rides, food delivery, groceries','Your #1 app — taxis, scooters (GrabBike), food. Cheaper & safer than street taxis.','https://apps.apple.com/app/grab-app/id647268330'],
+      ['🛵','Gojek','Rides, food (GoFood), payments','Indonesia’s home-grown rival to Grab — sometimes cheaper, wider scooter coverage.','https://apps.apple.com/app/gojek/id944875099'],
+      ['🗺️','Google Maps','Maps + offline downloads','Download offline maps of each area before you lose signal on the islands.','https://apps.apple.com/app/google-maps/id585027354'],
+      ['💬','Google Translate','Bahasa Indonesia, offline','Download Indonesian offline. Camera mode reads menus & signs.','https://apps.apple.com/app/google-translate/id414706506'],
+      ['✈️','Traveloka','Domestic flights, trains, hotels','Best local prices for Indonesian domestic flights & ferries — often beats Western sites.','https://apps.apple.com/app/traveloka-book-hotel-flight/id1064212993'],
+      ['💱','XE Currency','EUR ⇄ IDR converter, offline','Numbers have a LOT of zeros here. Sanity-check prices fast.','https://apps.apple.com/app/xe-currency-money-transfers/id315241195'],
+      ['💳','Wise','Multi-currency card & transfers','Great rates for spending; many travellers use it over bank cards.','https://apps.apple.com/app/wise/id612261027'],
+      ['📱','WhatsApp','Messaging','Every hotel, boat operator & tour books via WhatsApp here, not email.','https://apps.apple.com/app/whatsapp-messenger/id310633997']
+    ];
+    const appRow=(a,i,last)=>`<div style="display:flex;align-items:flex-start;gap:12px;padding:12px 0;${last?'':'border-bottom:0.5px solid var(--border)'}">
+      <div style="font-size:22px;width:28px;text-align:center;flex-shrink:0">${a[0]}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:14px;font-weight:600">${a[1]}</div>
+        <div class="muted" style="margin-top:1px">${a[2]}</div>
+        <div style="font-size:12px;color:var(--ok-tx);margin-top:4px;line-height:1.45">${a[3]}</div>
       </div>
-
-      <p class="section-h">🛵 Scooter & getting around</p>
-      <div class="card">
-        ${tip('Carry your <b>International Driving Permit</b> + licence — police checks happen, especially in Bali.')}
-        ${tip('Always wear the helmet. Check the bike for scratches & film it before renting.')}
-        ${tip('Confirm your <b>travel insurance covers motorbikes</b> — many exclude it without the right licence.')}
-        ${tip('On Gili Islands there are no cars or scooters — it’s bicycles & horse carts only.')}
-      </div>
-
-      <p class="section-h">🧭 Smart things first-timers miss</p>
-      <div class="card">
-        ${tip('Book the <b>Komodo sailing first</b> — departure dates are fixed and fill up; plan the rest around it.')}
-        ${tip('Buffer your <b>Bali→Jakarta</b> flight a full day before the EY473 home flight — domestic delays are common.')}
-        ${tip('Komodo <b>National Park fees</b> are often paid separately from the boat — bring extra cash.')}
-        ${tip('Carry small rupiah notes for temple donations, parking, and toilets.')}
-        ${tip('Respect dress codes at temples (sarong/covered shoulders) — Borobudur & Bali temples especially.')}
-        ${tip('Bali Belly is real — drink bottled water, be cautious with ice in cheap spots early on.')}
-        ${tip('Download your boarding passes & hotel bookings <b>offline</b> — island wifi is unreliable.')}
-      </div>
-
-      <p class="section-h">🆘 Good to have saved</p>
-      <div class="card">
-        ${tip('Emergency number in Indonesia: <b>112</b>.')}
-        ${tip('Netherlands embassy is in <b>Jakarta</b> — note the address before you travel inland.')}
-        ${tip('Keep a photo of your passport & travel insurance policy in your phone.')}
-      </div>
-      <p class="muted" style="text-align:center;padding:8px 4px 0">App links open the App Store. Verify visa/eSIM details close to departure — rules change.</p>
-    `;
+      <a class="lk" target="_blank" rel="noopener" href="${a[4]}" style="flex-shrink:0">Get</a>
+    </div>`;
+    const tip=t=>`<div style="display:flex;gap:10px;padding:8px 0;font-size:13px;line-height:1.5"><span style="color:var(--ok-tx)">✓</span><span style="flex:1">${t}</span></div>`;
+    const tipCard=(arr)=>`<div class="card">${arr.map((t,i)=>`<div style="${i?'border-top:0.5px solid var(--border)':''}">${tip(t)}</div>`).join('')}</div>`;
+    el.innerHTML =
+      `<p class="section-h" style="margin-top:4px">📲 Apps to download before you go</p>`
+      + `<div class="card">${APPS.map((a,i)=>appRow(a,i,i===APPS.length-1)).join('')}</div>`
+      + `<p class="section-h">💸 Money & SIM</p>`
+      + tipCard([
+        'Get an <b>eSIM</b> (Airalo / Holafly) before you land, or a local <b>Telkomsel</b> SIM at the airport — best coverage on remote islands.',
+        'Indonesia is still largely <b>cash</b> for small things (warungs, scooters, markets). Carry rupiah; cards work in malls & nicer spots.',
+        'Use ATMs inside banks. Withdraw larger amounts to save on the ~€3–4 fee per withdrawal.',
+        'IDR has many zeros — 100,000 IDR ≈ €5.70. Double-check before paying.',
+        'QRIS QR-code payment is everywhere now and works with many e-wallets.'
+      ])
+      + `<p class="section-h">🛵 Scooter & getting around</p>`
+      + tipCard([
+        'Carry your <b>International Driving Permit</b> + licence — police checks happen, especially in Bali.',
+        'Always wear the helmet. Check the bike for scratches & film it before renting.',
+        'Confirm your <b>travel insurance covers motorbikes</b> — many exclude it without the right licence.',
+        'On Gili Islands there are no cars or scooters — it’s bicycles & horse carts only.'
+      ])
+      + `<p class="section-h">🧭 Smart things first-timers miss</p>`
+      + tipCard([
+        'Book the <b>Komodo sailing first</b> — departure dates are fixed and fill up; plan the rest around it.',
+        'Buffer your <b>Bali → Jakarta</b> flight a full day before the EY473 home flight — domestic delays are common.',
+        'Komodo <b>National Park fees</b> are often paid separately from the boat — bring extra cash.',
+        'Carry small rupiah notes for temple donations, parking, and toilets.',
+        'Respect dress codes at temples (sarong / covered shoulders) — Borobudur & Bali temples especially.',
+        'Bali Belly is real — drink bottled water, be cautious with ice in cheap spots early on.',
+        'Download boarding passes & hotel bookings <b>offline</b> — island wifi is unreliable.'
+      ])
+      + `<p class="section-h">🆘 Good to have saved</p>`
+      + tipCard([
+        'Emergency number in Indonesia: <b>112</b>.',
+        'Netherlands embassy is in <b>Jakarta</b> — note the address before travelling inland.',
+        'Keep a photo of your passport & travel insurance policy in your phone.'
+      ])
+      + `<p class="muted" style="text-align:center;padding:8px 4px 0">App links open the App Store. Verify visa / eSIM details close to departure — rules change.</p>`;
   }
 
   function renderAll(){ renderOverview(); renderItinerary(); renderFinance(); renderTodo(); renderGuide(); renderCountdown(); }
@@ -516,6 +559,18 @@
     window.scrollTo(0,0);
   });
   load(); renderAll();
+
+  (function(){
+    const sp=document.getElementById('splash');
+    if(!sp) return;
+    const q=dailyQuote();
+    const sq=document.getElementById('splash-quote');
+    if(sq) sq.innerHTML = q.ar ? '<span style="direction:rtl;display:block;font-size:17px">'+esc(q.t)+'</span>' : esc(q.t);
+    let done=false;
+    const hide=()=>{ if(done)return; done=true; sp.classList.add('hide'); setTimeout(()=>{ if(sp.parentNode) sp.parentNode.removeChild(sp); },700); };
+    sp.addEventListener('click', hide);
+    setTimeout(hide, 2400);
+  })();
 })();
 if('serviceWorker' in navigator){ window.addEventListener('load',()=>navigator.serviceWorker.register('service-worker.js').catch(()=>{})); }
 </script>

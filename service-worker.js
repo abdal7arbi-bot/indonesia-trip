@@ -1,4 +1,4 @@
-const CACHE = 'indo-trip-v4';
+const CACHE = 'indo-trip-v6';
 const ASSETS = ['./', './index.html', './manifest.json'];
 
 self.addEventListener('install', e => {
